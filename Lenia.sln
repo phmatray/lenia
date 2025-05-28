@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lenia", "Lenia\Lenia\Lenia.csproj", "{ECDD1AAB-AA38-4ADA-8586-C564171D9BEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lenia.Client", "Lenia\Lenia.Client\Lenia.Client.csproj", "{BCD0E25F-344A-41A6-A16B-DBFFA4C435B3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ECDD1AAB-AA38-4ADA-8586-C564171D9BEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECDD1AAB-AA38-4ADA-8586-C564171D9BEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECDD1AAB-AA38-4ADA-8586-C564171D9BEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECDD1AAB-AA38-4ADA-8586-C564171D9BEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCD0E25F-344A-41A6-A16B-DBFFA4C435B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCD0E25F-344A-41A6-A16B-DBFFA4C435B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCD0E25F-344A-41A6-A16B-DBFFA4C435B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCD0E25F-344A-41A6-A16B-DBFFA4C435B3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
