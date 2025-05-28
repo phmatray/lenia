@@ -1,10 +1,30 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider Theme="@_theme" IsDarkMode="true" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 @Body
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#7c5cfc",
+            Secondary = "#ff8787", 
+            Tertiary = "#63e6be",
+            Success = "#69db7c",
+            Warning = "#ffec8c",
+            Error = "#ff8787",
+            Info = "#74c0fc",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            DrawerBackground = "#1a1a1a",
+            AppbarBackground = "#1a1a1a"
+        }
+    };
+}
 
 <div id="blazor-error-ui" data-nosnippet>
   An unhandled error has occurred.

@@ -4,16 +4,26 @@
 
 <PageTitle>Lenia</PageTitle>
 
-<MudAppBar Elevation="1">
-    <MudIcon Icon="@Icons.Material.Filled.Biotech" Style="margin-right: 10px;" />
-    <MudText Typo="Typo.h6">Lenia - Artificial Life Simulation</MudText>
-    <MudSpacer />
-    <MudIconButton Icon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
-                   Color="Color.Inherit" 
-                   OnClick="TogglePlayPause" />
-</MudAppBar>
-
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+<MudLayout>
+    <MudAppBar Fixed="true" Dense="true" Elevation="2">
+        <MudIcon Icon="@Icons.Material.Filled.Biotech" Style="margin-right: 10px;" />
+        <MudText Typo="Typo.h6">Lenia - Artificial Life Simulation</MudText>
+        <MudSpacer />
+        <MudChip T="string" 
+                 Icon="@Icons.Material.Filled.Speed" 
+                 Color="Color.Success" 
+                 Size="Size.Small" 
+                 Variant="Variant.Text">
+            @actualFps.ToString("F0") FPS
+        </MudChip>
+        <MudIconButton Icon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                       Color="@(isRunning ? Color.Warning : Color.Success)" 
+                       Size="Size.Large"
+                       OnClick="TogglePlayPause" />
+    </MudAppBar>
+    
+    <MudMainContent Class="pa-0">
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4 mt-4">
     <MudGrid>
         <MudItem xs="12" md="8">
             <MudPaper Elevation="2" Class="pa-4">
@@ -21,128 +31,232 @@
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudStack Spacing="3">
+        <MudItem xs="12" lg="4">
+            <MudPaper Elevation="2" Class="pa-0" Style="height: calc(100vh - 120px); overflow-y: auto;">
+                <MudStack Spacing="0">
+                    <MudPaper Elevation="1" Class="pa-4">
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                            Controls
+                        </MudText>
+                    </MudPaper>
                     
-                    <!-- Control Buttons -->
-                    <MudStack Row Spacing="2">
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="@(isRunning ? Color.Error : Color.Success)"
-                                   StartIcon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
-                                   OnClick="TogglePlayPause">
-                            @(isRunning ? "Pause" : "Play")
-                        </MudButton>
-                        <MudButton Variant="Variant.Outlined" 
-                                   StartIcon="@Icons.Material.Filled.Refresh"
-                                   OnClick="Reset">
-                            Reset
-                        </MudButton>
+                    <div Class="pa-4">
+                    <MudStack Spacing="4">
+                        
+                        <!-- Quick Actions -->
+                        <MudCard Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircleOutline" Class="mr-2" />
+                                        Actions
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Row Spacing="2" Justify="Justify.SpaceEvenly">
+                                    <MudButton Variant="Variant.Outlined" 
+                                               StartIcon="@Icons.Material.Filled.Refresh"
+                                               Color="Color.Secondary"
+                                               Size="Size.Small"
+                                               OnClick="Reset">
+                                        Reset
+                                    </MudButton>
+                                    <MudButton Variant="Variant.Outlined" 
+                                               StartIcon="@Icons.Material.Filled.Clear"
+                                               Color="Color.Warning"
+                                               Size="Size.Small"
+                                               OnClick="() => lenia.Clear()">
+                                        Clear
+                                    </MudButton>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <!-- Pattern Presets -->
+                        <MudCard Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Pattern" Class="mr-2" />
+                                        Patterns
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid>
+                                    <MudItem xs="4">
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   FullWidth="true"
+                                                   Size="Size.Small"
+                                                   OnClick="InitializeCircle">
+                                            Circle
+                                        </MudButton>
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   FullWidth="true"
+                                                   Size="Size.Small"
+                                                   OnClick="InitializeOrbium">
+                                            Orbium
+                                        </MudButton>
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   FullWidth="true"
+                                                   Size="Size.Small"
+                                                   OnClick="InitializeGeminium">
+                                            Geminium
+                                        </MudButton>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <!-- Grid Settings -->
+                        <MudCard Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.GridOn" Class="mr-2" />
+                                        Grid Settings
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Spacing="3">
+                                    <MudSlider T="int" 
+                                               Value="gridSize" 
+                                               Min="24" Max="128" Step="8"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0}×{0}"
+                                               ValueChanged="OnGridSizeChanged"
+                                               Color="Color.Primary">
+                                        <MudText Typo="Typo.body2">Grid Size</MudText>
+                                    </MudSlider>
+                                    
+                                    <MudSwitch @bind-Value="lenia.UseAdaptiveQuality" 
+                                               Label="Adaptive Quality" 
+                                               Color="Color.Primary" />
+                                    
+                                    <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true">
+                                        Quality: @lenia.ProcessingQuality%
+                                    </MudAlert>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <!-- Physics Parameters -->
+                        <MudCard Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Science" Class="mr-2" />
+                                        Physics
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Spacing="3">
+                                    <MudSlider T="float" 
+                                               @bind-Value="lenia.R" 
+                                               Min="2.0f" Max="10.0f" Step="0.1f"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0:F1}"
+                                               Color="Color.Secondary">
+                                        <MudText Typo="Typo.body2">Radius (R)</MudText>
+                                    </MudSlider>
+                                    
+                                    <MudSlider T="float" 
+                                               @bind-Value="lenia.DeltaT" 
+                                               Min="0.01f" Max="0.5f" Step="0.01f"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0:F2}"
+                                               Color="Color.Secondary">
+                                        <MudText Typo="Typo.body2">Time Step (Δt)</MudText>
+                                    </MudSlider>
+                                    
+                                    <MudSlider T="float" 
+                                               @bind-Value="lenia.Mu" 
+                                               Min="0.0f" Max="0.5f" Step="0.001f"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0:F3}"
+                                               Color="Color.Tertiary">
+                                        <MudText Typo="Typo.body2">Growth μ</MudText>
+                                    </MudSlider>
+                                    
+                                    <MudSlider T="float" 
+                                               @bind-Value="lenia.Sigma" 
+                                               Min="0.001f" Max="0.1f" Step="0.001f"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0:F3}"
+                                               Color="Color.Tertiary">
+                                        <MudText Typo="Typo.body2">Growth σ</MudText>
+                                    </MudSlider>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                        
+                        <!-- Performance -->
+                        <MudCard Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Speed" Class="mr-2" />
+                                        Performance
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Spacing="3">
+                                    <MudSlider T="int" 
+                                               Value="targetFps" 
+                                               Min="10" Max="120" Step="5"
+                                               ValueLabel="true"
+                                               ValueLabelFormat="{0} FPS"
+                                               ValueChanged="OnFpsChanged"
+                                               Color="Color.Success">
+                                        <MudText Typo="Typo.body2">Target FPS</MudText>
+                                    </MudSlider>
+                                    
+                                    <MudPaper Class="pa-3" Elevation="0">
+                                        <MudStack Spacing="2">
+                                            <MudGrid>
+                                                <MudItem xs="4">
+                                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">FPS</MudText>
+                                                    <MudText Typo="Typo.h6" Color="@GetFpsColor()">
+                                                        @actualFps.ToString("F0")
+                                                    </MudText>
+                                                </MudItem>
+                                                <MudItem xs="4">
+                                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Update</MudText>
+                                                    <MudText Typo="Typo.body2">
+                                                        @updateTimeMs.ToString("F0")ms
+                                                    </MudText>
+                                                </MudItem>
+                                                <MudItem xs="4">
+                                                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Render</MudText>
+                                                    <MudText Typo="Typo.body2">
+                                                        @renderTimeMs.ToString("F0")ms
+                                                    </MudText>
+                                                </MudItem>
+                                            </MudGrid>
+                                        </MudStack>
+                                    </MudPaper>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                        
                     </MudStack>
-                    
-                    <!-- Grid Size Controls -->
-                    <MudExpansionPanels Elevation="0">
-                        <MudExpansionPanel Text="Grid Settings">
-                            <MudStack Spacing="2">
-                                <MudSlider T="int" 
-                                           Value="gridSize" 
-                                           Min="24" Max="128" Step="8"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="{0}x{0}"
-                                           ValueChanged="OnGridSizeChanged">
-                                    Grid Size
-                                </MudSlider>
-                                
-                                <MudSwitch @bind-Value="lenia.UseAdaptiveQuality" 
-                                           Label="Adaptive Quality" 
-                                           Color="Color.Primary" />
-                                
-                                <MudText Typo="Typo.caption">
-                                    Processing Quality: @lenia.ProcessingQuality%
-                                </MudText>
-                            </MudStack>
-                        </MudExpansionPanel>
-                        
-                        <MudExpansionPanel Text="Pattern Presets">
-                            <MudStack Row Spacing="2">
-                                <MudButton Variant="Variant.Text" OnClick="InitializeCircle">Circle</MudButton>
-                                <MudButton Variant="Variant.Text" OnClick="InitializeOrbium">Orbium</MudButton>
-                                <MudButton Variant="Variant.Text" OnClick="InitializeGeminium">Geminium</MudButton>
-                            </MudStack>
-                        </MudExpansionPanel>
-                        
-                        <MudExpansionPanel Text="Physics Parameters">
-                            <MudStack Spacing="2">
-                                <MudSlider T="float" 
-                                           @bind-Value="lenia.R" 
-                                           Min="2.0f" Max="10.0f" Step="0.1f"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="R: {0:F1}">
-                                    Radius (R)
-                                </MudSlider>
-                                
-                                <MudSlider T="float" 
-                                           @bind-Value="lenia.DeltaT" 
-                                           Min="0.01f" Max="0.5f" Step="0.01f"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="Δt: {0:F2}">
-                                    Time Step (Δt)
-                                </MudSlider>
-                                
-                                <MudSlider T="float" 
-                                           @bind-Value="lenia.Mu" 
-                                           Min="0.0f" Max="0.5f" Step="0.001f"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="μ: {0:F3}">
-                                    Growth μ
-                                </MudSlider>
-                                
-                                <MudSlider T="float" 
-                                           @bind-Value="lenia.Sigma" 
-                                           Min="0.001f" Max="0.1f" Step="0.001f"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="σ: {0:F3}">
-                                    Growth σ
-                                </MudSlider>
-                            </MudStack>
-                        </MudExpansionPanel>
-                        
-                        <MudExpansionPanel Text="Performance">
-                            <MudStack Spacing="2">
-                                <MudSlider T="int" 
-                                           Value="targetFps" 
-                                           Min="10" Max="120" Step="5"
-                                           ValueLabel="true"
-                                           ValueLabelFormat="Target: {0} FPS"
-                                           ValueChanged="OnFpsChanged">
-                                    Target FPS
-                                </MudSlider>
-                                
-                                <MudPaper Class="pa-3" Style="background-color: #f5f5f5;">
-                                    <MudStack Spacing="1">
-                                        <MudText Typo="Typo.body2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Small" />
-                                            Actual FPS: <strong>@actualFps.ToString("F1")</strong>
-                                        </MudText>
-                                        <MudText Typo="Typo.body2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" />
-                                            Update Time: <strong>@updateTimeMs.ToString("F1")</strong> ms
-                                        </MudText>
-                                        <MudText Typo="Typo.body2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" />
-                                            Render Time: <strong>@renderTimeMs.ToString("F1")</strong> ms
-                                        </MudText>
-                                    </MudStack>
-                                </MudPaper>
-                            </MudStack>
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
-                    
+                    </div>
                 </MudStack>
             </MudPaper>
         </MudItem>
     </MudGrid>
-</MudContainer>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
 @code {
     private LeniaScalable lenia = new(32, 32, 60);
@@ -261,6 +375,16 @@
         {
             await leniaCanvas.RenderFrame();
         }
+    }
+    
+    private Color GetFpsColor()
+    {
+        return actualFps switch
+        {
+            >= 50 => Color.Success,
+            >= 30 => Color.Warning,
+            _ => Color.Error
+        };
     }
     
     public void Dispose()
