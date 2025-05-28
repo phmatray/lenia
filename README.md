@@ -33,7 +33,7 @@ A high-performance, real-time implementation of **Lenia** - a fascinating contin
 
 ## 🎮 Demo
 
-Try the live demo: **[Lenia Simulation](https://your-demo-url.com)** *(Deploy link here)*
+Try the live demo: **[Lenia Simulation](https://phmatray.github.io/Lenia/)**
 
 ## 🛠️ Technologies
 
@@ -42,7 +42,7 @@ Try the live demo: **[Lenia Simulation](https://your-demo-url.com)** *(Deploy li
 - **[MudBlazor](https://mudblazor.com/)** - Material Design component library
 - **[JavaScript Interop](https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability)** - High-performance canvas rendering
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)

@@ -1,17 +1,21 @@
 @using Microsoft.JSInterop
+@using Lenia.Client.Models
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-<canvas @ref="canvasElement" width="@Width" height="@Height" style="border: 1px solid #ccc;"></canvas>
+<canvas @ref="canvasElement" width="@Width" height="@Height" class="@CanvasClass" style="background-color: #000;"></canvas>
 
 @code {
     [Parameter] public int Width { get; set; } = 600;
     [Parameter] public int Height { get; set; } = 600;
     [Parameter] public LeniaScalable? Lenia { get; set; }
+    [Parameter] public ColorScheme? ColorScheme { get; set; }
+    [Parameter] public string CanvasClass { get; set; } = "";
     
     private ElementReference canvasElement;
     private IJSObjectReference? canvasModule;
     private DotNetObjectReference<LeniaCanvas>? objRef;
+    private ColorScheme? _currentColorScheme;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -20,6 +24,38 @@
             objRef = DotNetObjectReference.Create(this);
             canvasModule = await JS.InvokeAsync<IJSObjectReference>("import", "./leniaCanvas.js");
             await canvasModule.InvokeVoidAsync("initializeCanvas", canvasElement, objRef);
+            
+            // Apply initial color scheme if set
+            if (ColorScheme != null)
+            {
+                _currentColorScheme = ColorScheme;
+                await SetColorScheme(ColorScheme);
+            }
+        }
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // Handle color scheme changes via parameter
+        if (ColorScheme != _currentColorScheme && canvasModule != null)
+        {
+            _currentColorScheme = ColorScheme;
+            await SetColorScheme(ColorScheme);
+        }
+    }
+    
+    public async Task SetColorScheme(ColorScheme? scheme)
+    {
+        if (canvasModule != null && scheme != null)
+        {
+            var colors = scheme.Colors.Select(c => new { r = c.R, g = c.G, b = c.B }).ToArray();
+            await canvasModule.InvokeVoidAsync("setColorScheme", colors);
+            
+            // Re-render the frame with the new color scheme
+            if (Lenia != null)
+            {
+                await RenderFrame();
+            }
         }
     }
     
@@ -30,6 +66,15 @@
             var grid = Lenia.GetGrid();
             await canvasModule.InvokeVoidAsync("renderGrid", grid, Lenia.Width, Lenia.Height);
         }
+    }
+    
+    public async Task<string?> DownloadImage(string filename)
+    {
+        if (canvasModule != null)
+        {
+            await canvasModule.InvokeVoidAsync("downloadCanvas", filename);
+        }
+        return null;
     }
     
     public async ValueTask DisposeAsync()

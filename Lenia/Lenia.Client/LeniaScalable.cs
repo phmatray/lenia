@@ -202,6 +202,47 @@ public class LeniaScalable
         Array.Clear(grid, 0, size);
     }
     
+    public void InitializeRandom(float density)
+    {
+        var rand = new Random();
+        for (int i = 0; i < size; i++)
+        {
+            grid[i] = rand.NextSingle() < density ? rand.NextSingle() : 0f;
+        }
+    }
+    
+    
+    public void InitializeCross(int cx, int cy, int size, int thickness)
+    {
+        // Horizontal bar
+        for (int x = cx - size / 2; x <= cx + size / 2; x++)
+        {
+            for (int y = cy - thickness / 2; y <= cy + thickness / 2; y++)
+            {
+                if (x >= 0 && x < width && y >= 0 && y < height)
+                {
+                    float distFromCenter = Math.Abs(y - cy) / (float)(thickness / 2);
+                    float value = 1.0f - distFromCenter * distFromCenter;
+                    grid[y * width + x] = value;
+                }
+            }
+        }
+        
+        // Vertical bar
+        for (int y = cy - size / 2; y <= cy + size / 2; y++)
+        {
+            for (int x = cx - thickness / 2; x <= cx + thickness / 2; x++)
+            {
+                if (x >= 0 && x < width && y >= 0 && y < height)
+                {
+                    float distFromCenter = Math.Abs(x - cx) / (float)(thickness / 2);
+                    float value = 1.0f - distFromCenter * distFromCenter;
+                    grid[y * width + x] = Math.Max(grid[y * width + x], value);
+                }
+            }
+        }
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update()
     {
