@@ -50,8 +50,15 @@
         <div>
             <label>
                 Speed (FPS): <span>@targetFps</span>
-                <input type="range" min="1" max="60" @bind="targetFps" />
+                <input type="range" min="1" max="60" @bind="targetFps" @oninput="OnFpsChanged" />
             </label>
+        </div>
+        
+        <div class="performance-info">
+            <h4>Performance:</h4>
+            <p>Actual FPS: <span>@actualFps.ToString("F1")</span></p>
+            <p>Update Time: <span>@updateTimeMs.ToString("F1")</span> ms</p>
+            <p>Render Time: <span>@renderTimeMs.ToString("F1")</span> ms</p>
         </div>
     </div>
     
@@ -123,6 +130,22 @@
     .pattern-buttons h4 {
         margin: 0 0 5px 0;
     }
+    
+    .performance-info {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    
+    .performance-info h4 {
+        margin: 0 0 10px 0;
+    }
+    
+    .performance-info p {
+        margin: 5px 0;
+        font-family: monospace;
+    }
 </style>
 
 @code {
@@ -131,6 +154,12 @@
     private bool isRunning = false;
     private int targetFps = 30;
     private Timer? updateTimer;
+    
+    private double actualFps = 0;
+    private double updateTimeMs = 0;
+    private double renderTimeMs = 0;
+    private DateTime lastFrameTime = DateTime.Now;
+    private int frameCount = 0;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -169,17 +198,58 @@
         InvokeAsync(async () => await RenderFrame());
     }
     
+    private void OnFpsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var newFps))
+        {
+            targetFps = newFps;
+            RestartTimer();
+        }
+    }
+    
+    private void RestartTimer()
+    {
+        updateTimer?.Dispose();
+        if (targetFps > 0)
+        {
+            updateTimer = new Timer(async (_) =>
+            {
+                if (isRunning)
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    lenia.Update();
+                    sw.Stop();
+                    updateTimeMs = sw.Elapsed.TotalMilliseconds;
+                    
+                    sw.Restart();
+                    await InvokeAsync(async () => await RenderFrame());
+                    sw.Stop();
+                    renderTimeMs = sw.Elapsed.TotalMilliseconds;
+                    
+                    UpdateFpsCounter();
+                }
+            }, null, 0, 1000 / targetFps);
+        }
+    }
+    
+    private void UpdateFpsCounter()
+    {
+        frameCount++;
+        var now = DateTime.Now;
+        var elapsed = (now - lastFrameTime).TotalSeconds;
+        
+        if (elapsed >= 1.0)
+        {
+            actualFps = frameCount / elapsed;
+            frameCount = 0;
+            lastFrameTime = now;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    
     private Task StartAnimation()
     {
-        updateTimer = new Timer(async (_) =>
-        {
-            if (isRunning)
-            {
-                lenia.Update();
-                await InvokeAsync(async () => await RenderFrame());
-            }
-        }, null, 0, 1000 / targetFps);
-        
+        RestartTimer();
         return Task.CompletedTask;
     }
     

@@ -28,18 +28,7 @@
         if (canvasModule != null && Lenia != null)
         {
             var grid = Lenia.GetGrid();
-            var flatGrid = new double[grid.GetLength(0) * grid.GetLength(1)];
-            
-            int index = 0;
-            for (int y = 0; y < grid.GetLength(1); y++)
-            {
-                for (int x = 0; x < grid.GetLength(0); x++)
-                {
-                    flatGrid[index++] = grid[x, y];
-                }
-            }
-            
-            await canvasModule.InvokeVoidAsync("renderGrid", flatGrid, grid.GetLength(0), grid.GetLength(1));
+            await canvasModule.InvokeVoidAsync("renderGrid", grid, Lenia.Width, Lenia.Height);
         }
     }
     

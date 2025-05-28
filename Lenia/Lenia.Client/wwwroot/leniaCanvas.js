@@ -1,6 +1,8 @@
 let canvas;
 let ctx;
 let dotNetHelper;
+let imageData;
+let data;
 
 export function initializeCanvas(canvasElement, dotNetRef) {
     canvas = canvasElement;
@@ -13,19 +15,31 @@ export function renderGrid(flatGrid, gridWidth, gridHeight) {
     
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    const cellWidth = canvasWidth / gridWidth;
-    const cellHeight = canvasHeight / gridHeight;
     
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (!imageData || imageData.width !== canvasWidth || imageData.height !== canvasHeight) {
+        imageData = ctx.createImageData(canvasWidth, canvasHeight);
+        data = imageData.data;
+    }
     
-    let index = 0;
-    for (let y = 0; y < gridHeight; y++) {
-        for (let x = 0; x < gridWidth; x++) {
-            const value = flatGrid[index++];
+    const scaleX = gridWidth / canvasWidth;
+    const scaleY = gridHeight / canvasHeight;
+    
+    for (let canvasY = 0; canvasY < canvasHeight; canvasY++) {
+        for (let canvasX = 0; canvasX < canvasWidth; canvasX++) {
+            const gridX = Math.floor(canvasX * scaleX);
+            const gridY = Math.floor(canvasY * scaleY);
+            
+            const gridIndex = gridY * gridWidth + gridX;
+            const value = flatGrid[gridIndex];
             const intensity = Math.floor(value * 255);
             
-            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-            ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+            const pixelIndex = (canvasY * canvasWidth + canvasX) * 4;
+            data[pixelIndex] = intensity;     // Red
+            data[pixelIndex + 1] = intensity; // Green
+            data[pixelIndex + 2] = intensity; // Blue
+            data[pixelIndex + 3] = 255;       // Alpha
         }
     }
+    
+    ctx.putImageData(imageData, 0, 0);
 }
