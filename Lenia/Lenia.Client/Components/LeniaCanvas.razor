@@ -1,0 +1,54 @@
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<canvas @ref="canvasElement" width="@Width" height="@Height" style="border: 1px solid #ccc;"></canvas>
+
+@code {
+    [Parameter] public int Width { get; set; } = 600;
+    [Parameter] public int Height { get; set; } = 600;
+    [Parameter] public LeniaCore? Lenia { get; set; }
+    
+    private ElementReference canvasElement;
+    private IJSObjectReference? canvasModule;
+    private DotNetObjectReference<LeniaCanvas>? objRef;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            canvasModule = await JS.InvokeAsync<IJSObjectReference>("import", "./leniaCanvas.js");
+            await canvasModule.InvokeVoidAsync("initializeCanvas", canvasElement, objRef);
+        }
+    }
+    
+    public async Task RenderFrame()
+    {
+        if (canvasModule != null && Lenia != null)
+        {
+            var grid = Lenia.GetGrid();
+            var flatGrid = new double[grid.GetLength(0) * grid.GetLength(1)];
+            
+            int index = 0;
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                for (int x = 0; x < grid.GetLength(0); x++)
+                {
+                    flatGrid[index++] = grid[x, y];
+                }
+            }
+            
+            await canvasModule.InvokeVoidAsync("renderGrid", flatGrid, grid.GetLength(0), grid.GetLength(1));
+        }
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (canvasModule != null)
+        {
+            await canvasModule.DisposeAsync();
+        }
+        objRef?.Dispose();
+    }
+}
