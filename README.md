@@ -52,7 +52,7 @@ Try the live demo: **[Lenia Simulation](https://your-demo-url.com)** *(Deploy li
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/lenia.git
+   git clone https://github.com/phmatray/lenia.git
    cd lenia
    ```
 
@@ -196,16 +196,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Issues & Support
 
-- **Bug Reports**: [GitHub Issues](https://github.com/yourusername/lenia/issues)
-- **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/lenia/discussions)
-- **Documentation**: [Wiki](https://github.com/yourusername/lenia/wiki)
+- **Bug Reports**: [GitHub Issues](https://github.com/phmatray/lenia/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/phmatray/lenia/discussions)
+- **Documentation**: [Wiki](https://github.com/phmatray/lenia/wiki)
 
 ---
 
 <div align="center">
 
-**[⭐ Star this repository](https://github.com/yourusername/lenia/stargazers)** if you find it interesting!
+**[⭐ Star this repository](https://github.com/phmatray/lenia/stargazers)** if you find it interesting!
 
-Made with ❤️ and lots of ☕ by [Your Name](https://github.com/yourusername)
+Made with ❤️ and lots of ☕ by [Philippe Matray](https://github.com/phmatray)
 
 </div>

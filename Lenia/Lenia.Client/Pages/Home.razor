@@ -14,10 +14,10 @@
                  Color="Color.Success" 
                  Size="Size.Small" 
                  Variant="Variant.Text">
-            @actualFps.ToString("F0") FPS
+            @_actualFps.ToString("F0") FPS
         </MudChip>
-        <MudIconButton Icon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
-                       Color="@(isRunning ? Color.Warning : Color.Success)" 
+        <MudIconButton Icon="@(_isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                       Color="@(_isRunning ? Color.Warning : Color.Success)" 
                        Size="Size.Large"
                        OnClick="TogglePlayPause" />
     </MudAppBar>
@@ -27,7 +27,7 @@
     <MudGrid>
         <MudItem xs="12" md="8">
             <MudPaper Elevation="2" Class="pa-4">
-                <LeniaCanvas @ref="leniaCanvas" Width="600" Height="600" Lenia="lenia" />
+                <LeniaCanvas @ref="_leniaCanvas" Width="600" Height="600" Lenia="_lenia" />
             </MudPaper>
         </MudItem>
         
@@ -67,7 +67,7 @@
                                                StartIcon="@Icons.Material.Filled.Clear"
                                                Color="Color.Warning"
                                                Size="Size.Small"
-                                               OnClick="() => lenia.Clear()">
+                                               OnClick="Clear">
                                         Clear
                                     </MudButton>
                                 </MudStack>
@@ -127,7 +127,7 @@
                             <MudCardContent>
                                 <MudStack Spacing="3">
                                     <MudSlider T="int" 
-                                               Value="gridSize" 
+                                               Value="_gridSize" 
                                                Min="24" Max="128" Step="8"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0}×{0}"
@@ -136,12 +136,13 @@
                                         <MudText Typo="Typo.body2">Grid Size</MudText>
                                     </MudSlider>
                                     
-                                    <MudSwitch @bind-Value="lenia.UseAdaptiveQuality" 
+                                    <MudSwitch Value="_lenia.UseAdaptiveQuality"
+                                               ValueChanged="@((bool value) => OnAdaptiveQualityChanged(value))"
                                                Label="Adaptive Quality" 
                                                Color="Color.Primary" />
                                     
                                     <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true">
-                                        Quality: @lenia.ProcessingQuality%
+                                        Quality: @_lenia.ProcessingQuality%
                                     </MudAlert>
                                 </MudStack>
                             </MudCardContent>
@@ -160,7 +161,7 @@
                             <MudCardContent>
                                 <MudStack Spacing="3">
                                     <MudSlider T="float" 
-                                               @bind-Value="lenia.R" 
+                                               @bind-Value="_lenia.R" 
                                                Min="2.0f" Max="10.0f" Step="0.1f"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0:F1}"
@@ -169,7 +170,7 @@
                                     </MudSlider>
                                     
                                     <MudSlider T="float" 
-                                               @bind-Value="lenia.DeltaT" 
+                                               @bind-Value="_lenia.DeltaT" 
                                                Min="0.01f" Max="0.5f" Step="0.01f"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0:F2}"
@@ -178,7 +179,7 @@
                                     </MudSlider>
                                     
                                     <MudSlider T="float" 
-                                               @bind-Value="lenia.Mu" 
+                                               @bind-Value="_lenia.Mu" 
                                                Min="0.0f" Max="0.5f" Step="0.001f"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0:F3}"
@@ -187,7 +188,7 @@
                                     </MudSlider>
                                     
                                     <MudSlider T="float" 
-                                               @bind-Value="lenia.Sigma" 
+                                               @bind-Value="_lenia.Sigma" 
                                                Min="0.001f" Max="0.1f" Step="0.001f"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0:F3}"
@@ -211,7 +212,7 @@
                             <MudCardContent>
                                 <MudStack Spacing="3">
                                     <MudSlider T="int" 
-                                               Value="targetFps" 
+                                               Value="_targetFps" 
                                                Min="10" Max="120" Step="5"
                                                ValueLabel="true"
                                                ValueLabelFormat="{0} FPS"
@@ -226,19 +227,19 @@
                                                 <MudItem xs="4">
                                                     <MudText Typo="Typo.caption" Class="mud-text-secondary">FPS</MudText>
                                                     <MudText Typo="Typo.h6" Color="@GetFpsColor()">
-                                                        @actualFps.ToString("F0")
+                                                        @_actualFps.ToString("F0")
                                                     </MudText>
                                                 </MudItem>
                                                 <MudItem xs="4">
                                                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Update</MudText>
                                                     <MudText Typo="Typo.body2">
-                                                        @updateTimeMs.ToString("F0")ms
+                                                        @_updateTimeMs.ToString("F0")ms
                                                     </MudText>
                                                 </MudItem>
                                                 <MudItem xs="4">
                                                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Render</MudText>
                                                     <MudText Typo="Typo.body2">
-                                                        @renderTimeMs.ToString("F0")ms
+                                                        @_renderTimeMs.ToString("F0")ms
                                                     </MudText>
                                                 </MudItem>
                                             </MudGrid>
@@ -259,18 +260,18 @@
 </MudLayout>
 
 @code {
-    private LeniaScalable lenia = new(32, 32, 60);
-    private LeniaCanvas? leniaCanvas;
-    private bool isRunning = false;
-    private int targetFps = 60;
-    private int gridSize = 32;
-    private Timer? updateTimer;
+    private LeniaScalable _lenia = new(32, 32, 60);
+    private LeniaCanvas? _leniaCanvas;
+    private bool _isRunning;
+    private int _targetFps = 60;
+    private int _gridSize = 32;
+    private Timer? _updateTimer;
     
-    private double actualFps = 0;
-    private double updateTimeMs = 0;
-    private double renderTimeMs = 0;
-    private DateTime lastFrameTime = DateTime.Now;
-    private int frameCount = 0;
+    private double _actualFps;
+    private double _updateTimeMs;
+    private double _renderTimeMs;
+    private DateTime _lastFrameTime = DateTime.Now;
+    private int _frameCount;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -282,83 +283,120 @@
     
     private void TogglePlayPause()
     {
-        isRunning = !isRunning;
+        _isRunning = !_isRunning;
+        StateHasChanged();
     }
     
     private void Reset()
     {
-        lenia = new LeniaScalable(gridSize, gridSize, targetFps);
-        InvokeAsync(async () => await RenderFrame());
+        _lenia = new LeniaScalable(_gridSize, _gridSize, _targetFps);
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
+    }
+    
+    private void Clear()
+    {
+        _lenia.Clear();
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
     }
     
     private void InitializeCircle()
     {
-        lenia.InitializeCircle(gridSize / 2, gridSize / 2, gridSize / 6);
-        InvokeAsync(async () => await RenderFrame());
+        _lenia.InitializeCircle(_gridSize / 2, _gridSize / 2, _gridSize / 6);
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
     }
     
     private void OnGridSizeChanged(int newSize)
     {
-        gridSize = newSize;
-        lenia.ResizeGrid(gridSize, gridSize);
-        InvokeAsync(async () => await RenderFrame());
+        _gridSize = newSize;
+        _lenia.ResizeGrid(_gridSize, _gridSize);
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
     }
     
     private void InitializeOrbium()
     {
-        lenia.InitializeOrbium();
-        InvokeAsync(async () => await RenderFrame());
+        _lenia.InitializeOrbium();
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
     }
     
     private void InitializeGeminium()
     {
-        lenia.InitializeGeminium();
-        InvokeAsync(async () => await RenderFrame());
+        _lenia.InitializeGeminium();
+        InvokeAsync(async () => 
+        {
+            await RenderFrame();
+            StateHasChanged();
+        });
     }
     
     private void OnFpsChanged(int newFps)
     {
-        targetFps = newFps;
-        lenia.SetTargetFPS(targetFps);
+        _targetFps = newFps;
+        _lenia.SetTargetFPS(_targetFps);
         RestartTimer();
+    }
+    
+    private void OnAdaptiveQualityChanged(bool newValue)
+    {
+        _lenia.UseAdaptiveQuality = newValue;
+        StateHasChanged();
     }
     
     private void RestartTimer()
     {
-        updateTimer?.Dispose();
-        if (targetFps > 0)
+        _updateTimer?.Dispose();
+        if (_targetFps > 0)
         {
-            updateTimer = new Timer(async (_) =>
+            _updateTimer = new Timer(async (_) =>
             {
-                if (isRunning)
+                if (_isRunning)
                 {
                     var sw = System.Diagnostics.Stopwatch.StartNew();
-                    lenia.Update();
+                    _lenia.Update();
                     sw.Stop();
-                    updateTimeMs = sw.Elapsed.TotalMilliseconds;
+                    _updateTimeMs = sw.Elapsed.TotalMilliseconds;
                     
                     sw.Restart();
                     await InvokeAsync(async () => await RenderFrame());
                     sw.Stop();
-                    renderTimeMs = sw.Elapsed.TotalMilliseconds;
+                    _renderTimeMs = sw.Elapsed.TotalMilliseconds;
                     
                     UpdateFpsCounter();
                 }
-            }, null, 0, (long)(1000 / targetFps));
+            }, null, 0, (long)(1000 / _targetFps));
         }
     }
     
     private void UpdateFpsCounter()
     {
-        frameCount++;
+        _frameCount++;
         var now = DateTime.Now;
-        var elapsed = (now - lastFrameTime).TotalSeconds;
+        var elapsed = (now - _lastFrameTime).TotalSeconds;
         
         if (elapsed >= 1.0)
         {
-            actualFps = frameCount / elapsed;
-            frameCount = 0;
-            lastFrameTime = now;
+            _actualFps = _frameCount / elapsed;
+            _frameCount = 0;
+            _lastFrameTime = now;
             InvokeAsync(StateHasChanged);
         }
     }
@@ -371,15 +409,15 @@
     
     private async Task RenderFrame()
     {
-        if (leniaCanvas != null)
+        if (_leniaCanvas != null)
         {
-            await leniaCanvas.RenderFrame();
+            await _leniaCanvas.RenderFrame();
         }
     }
     
     private Color GetFpsColor()
     {
-        return actualFps switch
+        return _actualFps switch
         {
             >= 50 => Color.Success,
             >= 30 => Color.Warning,
@@ -389,6 +427,6 @@
     
     public void Dispose()
     {
-        updateTimer?.Dispose();
+        _updateTimer?.Dispose();
     }
 }
