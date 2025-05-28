@@ -7,7 +7,7 @@
 
 A high-performance, real-time implementation of **Lenia** - a fascinating continuous cellular automaton that creates complex, lifelike patterns. Built with Blazor WebAssembly and MudBlazor for a modern, interactive web experience.
 
-![Lenia Demo](https://via.placeholder.com/800x400/1a1a1a/7c5cfc?text=Lenia+Simulation+Demo)
+![Lenia Demo](screenshots/lenia.png)
 
 ## ✨ Features
 

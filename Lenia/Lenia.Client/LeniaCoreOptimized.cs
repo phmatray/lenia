@@ -1,21 +1,19 @@
-using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace Lenia.Client;
 
 public class LeniaCoreOptimized
 {
-    private double[] grid;
-    private double[] nextGrid;
-    private readonly int width;
-    private readonly int height;
-    private readonly int size;
+    private double[] _grid;
+    private double[] _nextGrid;
+    private readonly int _width;
+    private readonly int _height;
+    private readonly int _size;
     
-    private readonly int[] kernelX;
-    private readonly int[] kernelY;
-    private readonly double[] kernelWeights;
-    private readonly int kernelCount;
+    private readonly int[] _kernelX;
+    private readonly int[] _kernelY;
+    private readonly double[] _kernelWeights;
+    private readonly int _kernelCount;
     
     public double R { get; set; } = 10.0;
     public double DeltaT { get; set; } = 0.1;
@@ -23,30 +21,30 @@ public class LeniaCoreOptimized
     public double Sigma { get; set; } = 0.016;
     public double KernelAlpha { get; set; } = 4.0;
     
-    public int Width => width;
-    public int Height => height;
+    public int Width => _width;
+    public int Height => _height;
     
     public LeniaCoreOptimized(int width, int height)
     {
-        this.width = width;
-        this.height = height;
-        this.size = width * height;
-        grid = new double[size];
-        nextGrid = new double[size];
+        this._width = width;
+        this._height = height;
+        this._size = width * height;
+        _grid = new double[_size];
+        _nextGrid = new double[_size];
         
         var kernelList = new List<(int x, int y, double weight)>();
         BuildKernel(kernelList);
         
-        kernelCount = kernelList.Count;
-        kernelX = new int[kernelCount];
-        kernelY = new int[kernelCount];
-        kernelWeights = new double[kernelCount];
+        _kernelCount = kernelList.Count;
+        _kernelX = new int[_kernelCount];
+        _kernelY = new int[_kernelCount];
+        _kernelWeights = new double[_kernelCount];
         
-        for (int i = 0; i < kernelCount; i++)
+        for (int i = 0; i < _kernelCount; i++)
         {
-            kernelX[i] = kernelList[i].x;
-            kernelY[i] = kernelList[i].y;
-            kernelWeights[i] = kernelList[i].weight;
+            _kernelX[i] = kernelList[i].x;
+            _kernelY[i] = kernelList[i].y;
+            _kernelWeights[i] = kernelList[i].weight;
         }
         
         InitializeRandom();
@@ -80,29 +78,29 @@ public class LeniaCoreOptimized
         }
     }
     
-    public double[] GetGrid() => grid;
+    public double[] GetGrid() => _grid;
     
     private void InitializeRandom()
     {
         var random = new Random();
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < _size; i++)
         {
-            grid[i] = random.NextDouble();
+            _grid[i] = random.NextDouble();
         }
     }
     
     public void InitializeCircle(int centerX, int centerY, int radius)
     {
-        Array.Clear(grid, 0, size);
-        for (int y = Math.Max(0, centerY - radius); y <= Math.Min(height - 1, centerY + radius); y++)
+        Array.Clear(_grid, 0, _size);
+        for (int y = Math.Max(0, centerY - radius); y <= Math.Min(_height - 1, centerY + radius); y++)
         {
-            for (int x = Math.Max(0, centerX - radius); x <= Math.Min(width - 1, centerX + radius); x++)
+            for (int x = Math.Max(0, centerX - radius); x <= Math.Min(_width - 1, centerX + radius); x++)
             {
                 var dx = x - centerX;
                 var dy = y - centerY;
                 if (dx * dx + dy * dy <= radius * radius)
                 {
-                    grid[y * width + x] = 1.0;
+                    _grid[y * _width + x] = 1.0;
                 }
             }
         }
@@ -110,17 +108,17 @@ public class LeniaCoreOptimized
     
     public void InitializeRing(int centerX, int centerY, int innerRadius, int outerRadius)
     {
-        Array.Clear(grid, 0, size);
-        for (int y = Math.Max(0, centerY - outerRadius); y <= Math.Min(height - 1, centerY + outerRadius); y++)
+        Array.Clear(_grid, 0, _size);
+        for (int y = Math.Max(0, centerY - outerRadius); y <= Math.Min(_height - 1, centerY + outerRadius); y++)
         {
-            for (int x = Math.Max(0, centerX - outerRadius); x <= Math.Min(width - 1, centerX + outerRadius); x++)
+            for (int x = Math.Max(0, centerX - outerRadius); x <= Math.Min(_width - 1, centerX + outerRadius); x++)
             {
                 var dx = x - centerX;
                 var dy = y - centerY;
                 var distSq = dx * dx + dy * dy;
                 if (distSq >= innerRadius * innerRadius && distSq <= outerRadius * outerRadius)
                 {
-                    grid[y * width + x] = 1.0;
+                    _grid[y * _width + x] = 1.0;
                 }
             }
         }
@@ -136,7 +134,7 @@ public class LeniaCoreOptimized
         
         var kernelList = new List<(int x, int y, double weight)>();
         BuildKernel(kernelList);
-        InitializeCircle(width / 2, height / 2, 12);
+        InitializeCircle(_width / 2, _height / 2, 12);
     }
     
     public void InitializeGeminium()
@@ -149,36 +147,36 @@ public class LeniaCoreOptimized
         
         var kernelList = new List<(int x, int y, double weight)>();
         BuildKernel(kernelList);
-        InitializeRing(width / 2, height / 2, 6, 10);
+        InitializeRing(_width / 2, _height / 2, 6, 10);
     }
     
     public void Clear()
     {
-        Array.Clear(grid, 0, size);
+        Array.Clear(_grid, 0, _size);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update()
     {
-        Parallel.For(0, height, y =>
+        Parallel.For(0, _height, y =>
         {
             UpdateRow(y);
         });
         
-        (grid, nextGrid) = (nextGrid, grid);
+        (_grid, _nextGrid) = (_nextGrid, _grid);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateRow(int y)
     {
-        var rowStart = y * width;
+        var rowStart = y * _width;
         
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < _width; x++)
         {
             var index = rowStart + x;
             var potential = CalculatePotentialFast(x, y);
             var growth = GrowthFunction(potential);
-            nextGrid[index] = Math.Max(0.0, Math.Min(1.0, grid[index] + DeltaT * growth));
+            _nextGrid[index] = Math.Max(0.0, Math.Min(1.0, _grid[index] + DeltaT * growth));
         }
     }
     
@@ -187,19 +185,19 @@ public class LeniaCoreOptimized
     {
         double sum = 0;
         
-        for (int i = 0; i < kernelCount; i++)
+        for (int i = 0; i < _kernelCount; i++)
         {
-            var targetX = centerX + kernelX[i];
-            var targetY = centerY + kernelY[i];
+            var targetX = centerX + _kernelX[i];
+            var targetY = centerY + _kernelY[i];
             
-            if (targetX < 0) targetX += width;
-            else if (targetX >= width) targetX -= width;
+            if (targetX < 0) targetX += _width;
+            else if (targetX >= _width) targetX -= _width;
             
-            if (targetY < 0) targetY += height;
-            else if (targetY >= height) targetY -= height;
+            if (targetY < 0) targetY += _height;
+            else if (targetY >= _height) targetY -= _height;
             
-            var targetIndex = targetY * width + targetX;
-            sum += grid[targetIndex] * kernelWeights[i];
+            var targetIndex = targetY * _width + targetX;
+            sum += _grid[targetIndex] * _kernelWeights[i];
         }
         
         return sum;

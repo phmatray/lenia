@@ -1,26 +1,24 @@
-using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace Lenia.Client;
 
 public class LeniaUltraFast
 {
-    private float[] grid;
-    private float[] nextGrid;
-    private readonly int width;
-    private readonly int height;
-    private readonly int size;
+    private float[] _grid;
+    private float[] _nextGrid;
+    private readonly int _width;
+    private readonly int _height;
+    private readonly int _size;
     
     // Ultra sparse kernel - only store significant weights
-    private readonly int[] kernelOffsetsX;
-    private readonly int[] kernelOffsetsY;
-    private readonly float[] kernelWeights;
-    private readonly int kernelCount;
+    private readonly int[] _kernelOffsetsX;
+    private readonly int[] _kernelOffsetsY;
+    private readonly float[] _kernelWeights;
+    private readonly int _kernelCount;
     
     // Precomputed growth function lookup table
-    private readonly float[] growthLookup;
-    private const int LOOKUP_SIZE = 1024;
+    private readonly float[] _growthLookup;
+    private const int LookupSize = 1024;
     
     public float R { get; set; } = 6.0f;
     public float DeltaT { get; set; } = 0.1f;
@@ -28,39 +26,39 @@ public class LeniaUltraFast
     public float Sigma { get; set; } = 0.016f;
     public float KernelAlpha { get; set; } = 4.0f;
     
-    public int Width => width;
-    public int Height => height;
+    public int Width => _width;
+    public int Height => _height;
     
     public LeniaUltraFast(int width, int height)
     {
-        this.width = width;
-        this.height = height;
-        this.size = width * height;
-        grid = new float[size];
-        nextGrid = new float[size];
+        this._width = width;
+        this._height = height;
+        this._size = width * height;
+        _grid = new float[_size];
+        _nextGrid = new float[_size];
         
         // Build ultra-sparse kernel
         var kernelList = new List<(int x, int y, float weight)>();
         BuildSparseKernel(kernelList);
         
-        kernelCount = kernelList.Count;
-        kernelOffsetsX = new int[kernelCount];
-        kernelOffsetsY = new int[kernelCount];
-        kernelWeights = new float[kernelCount];
+        _kernelCount = kernelList.Count;
+        _kernelOffsetsX = new int[_kernelCount];
+        _kernelOffsetsY = new int[_kernelCount];
+        _kernelWeights = new float[_kernelCount];
         
-        for (int i = 0; i < kernelCount; i++)
+        for (int i = 0; i < _kernelCount; i++)
         {
-            kernelOffsetsX[i] = kernelList[i].x;
-            kernelOffsetsY[i] = kernelList[i].y;
-            kernelWeights[i] = kernelList[i].weight;
+            _kernelOffsetsX[i] = kernelList[i].x;
+            _kernelOffsetsY[i] = kernelList[i].y;
+            _kernelWeights[i] = kernelList[i].weight;
         }
         
         // Precompute growth function lookup table
-        growthLookup = new float[LOOKUP_SIZE];
-        for (int i = 0; i < LOOKUP_SIZE; i++)
+        _growthLookup = new float[LookupSize];
+        for (int i = 0; i < LookupSize; i++)
         {
-            float u = (float)i / (LOOKUP_SIZE - 1);
-            growthLookup[i] = ComputeGrowth(u);
+            float u = (float)i / (LookupSize - 1);
+            _growthLookup[i] = ComputeGrowth(u);
         }
         
         InitializeRandom();
@@ -98,10 +96,10 @@ public class LeniaUltraFast
     
     public double[] GetGrid()
     {
-        var result = new double[size];
-        for (int i = 0; i < size; i++)
+        var result = new double[_size];
+        for (int i = 0; i < _size; i++)
         {
-            result[i] = grid[i];
+            result[i] = _grid[i];
         }
         return result;
     }
@@ -109,26 +107,26 @@ public class LeniaUltraFast
     private void InitializeRandom()
     {
         var random = new Random();
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < _size; i++)
         {
-            grid[i] = (float)random.NextDouble();
+            _grid[i] = (float)random.NextDouble();
         }
     }
     
     public void InitializeCircle(int centerX, int centerY, int radius)
     {
-        Array.Clear(grid, 0, size);
+        Array.Clear(_grid, 0, _size);
         int radiusSq = radius * radius;
         
-        for (int y = Math.Max(0, centerY - radius); y <= Math.Min(height - 1, centerY + radius); y++)
+        for (int y = Math.Max(0, centerY - radius); y <= Math.Min(_height - 1, centerY + radius); y++)
         {
-            for (int x = Math.Max(0, centerX - radius); x <= Math.Min(width - 1, centerX + radius); x++)
+            for (int x = Math.Max(0, centerX - radius); x <= Math.Min(_width - 1, centerX + radius); x++)
             {
                 int dx = x - centerX;
                 int dy = y - centerY;
                 if (dx * dx + dy * dy <= radiusSq)
                 {
-                    grid[y * width + x] = 1.0f;
+                    _grid[y * _width + x] = 1.0f;
                 }
             }
         }
@@ -136,20 +134,20 @@ public class LeniaUltraFast
     
     public void InitializeRing(int centerX, int centerY, int innerRadius, int outerRadius)
     {
-        Array.Clear(grid, 0, size);
+        Array.Clear(_grid, 0, _size);
         int innerRadiusSq = innerRadius * innerRadius;
         int outerRadiusSq = outerRadius * outerRadius;
         
-        for (int y = Math.Max(0, centerY - outerRadius); y <= Math.Min(height - 1, centerY + outerRadius); y++)
+        for (int y = Math.Max(0, centerY - outerRadius); y <= Math.Min(_height - 1, centerY + outerRadius); y++)
         {
-            for (int x = Math.Max(0, centerX - outerRadius); x <= Math.Min(width - 1, centerX + outerRadius); x++)
+            for (int x = Math.Max(0, centerX - outerRadius); x <= Math.Min(_width - 1, centerX + outerRadius); x++)
             {
                 int dx = x - centerX;
                 int dy = y - centerY;
                 int distSq = dx * dx + dy * dy;
                 if (distSq >= innerRadiusSq && distSq <= outerRadiusSq)
                 {
-                    grid[y * width + x] = 1.0f;
+                    _grid[y * _width + x] = 1.0f;
                 }
             }
         }
@@ -165,7 +163,7 @@ public class LeniaUltraFast
         
         var kernelList = new List<(int x, int y, float weight)>();
         BuildSparseKernel(kernelList);
-        InitializeCircle(width / 2, height / 2, 8);
+        InitializeCircle(_width / 2, _height / 2, 8);
     }
     
     public void InitializeGeminium()
@@ -178,24 +176,24 @@ public class LeniaUltraFast
         
         var kernelList = new List<(int x, int y, float weight)>();
         BuildSparseKernel(kernelList);
-        InitializeRing(width / 2, height / 2, 4, 7);
+        InitializeRing(_width / 2, _height / 2, 4, 7);
     }
     
     public void Clear()
     {
-        Array.Clear(grid, 0, size);
+        Array.Clear(_grid, 0, _size);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update()
     {
         // Process in chunks for better cache locality
-        int chunkSize = height / Environment.ProcessorCount;
+        int chunkSize = _height / Environment.ProcessorCount;
         
         Parallel.For(0, Environment.ProcessorCount, chunk =>
         {
             int startY = chunk * chunkSize;
-            int endY = (chunk == Environment.ProcessorCount - 1) ? height : (chunk + 1) * chunkSize;
+            int endY = (chunk == Environment.ProcessorCount - 1) ? _height : (chunk + 1) * chunkSize;
             
             for (int y = startY; y < endY; y++)
             {
@@ -203,20 +201,20 @@ public class LeniaUltraFast
             }
         });
         
-        (grid, nextGrid) = (nextGrid, grid);
+        (_grid, _nextGrid) = (_nextGrid, _grid);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateRow(int y)
     {
-        int rowStart = y * width;
+        int rowStart = y * _width;
         
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < _width; x++)
         {
             int index = rowStart + x;
             float potential = CalculatePotential(x, y);
             float growth = GetGrowthFromLookup(potential);
-            nextGrid[index] = Math.Max(0.0f, Math.Min(1.0f, grid[index] + DeltaT * growth));
+            _nextGrid[index] = Math.Max(0.0f, Math.Min(1.0f, _grid[index] + DeltaT * growth));
         }
     }
     
@@ -225,19 +223,19 @@ public class LeniaUltraFast
     {
         float sum = 0;
         
-        for (int i = 0; i < kernelCount; i++)
+        for (int i = 0; i < _kernelCount; i++)
         {
-            int targetX = centerX + kernelOffsetsX[i];
-            int targetY = centerY + kernelOffsetsY[i];
+            int targetX = centerX + _kernelOffsetsX[i];
+            int targetY = centerY + _kernelOffsetsY[i];
             
             // Fast wrapping using bitwise operations (works for power-of-2 sizes)
-            if (targetX < 0) targetX += width;
-            else if (targetX >= width) targetX -= width;
+            if (targetX < 0) targetX += _width;
+            else if (targetX >= _width) targetX -= _width;
             
-            if (targetY < 0) targetY += height;
-            else if (targetY >= height) targetY -= height;
+            if (targetY < 0) targetY += _height;
+            else if (targetY >= _height) targetY -= _height;
             
-            sum += grid[targetY * width + targetX] * kernelWeights[i];
+            sum += _grid[targetY * _width + targetX] * _kernelWeights[i];
         }
         
         return sum;
@@ -246,9 +244,9 @@ public class LeniaUltraFast
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private float GetGrowthFromLookup(float u)
     {
-        int index = (int)(u * (LOOKUP_SIZE - 1));
-        index = Math.Max(0, Math.Min(LOOKUP_SIZE - 1, index));
-        return growthLookup[index];
+        int index = (int)(u * (LookupSize - 1));
+        index = Math.Max(0, Math.Min(LookupSize - 1, index));
+        return _growthLookup[index];
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

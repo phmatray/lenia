@@ -1,20 +1,17 @@
-using System;
-using System.Threading.Tasks;
-
 namespace Lenia.Client;
 
 public class LeniaCore
 {
-    private double[] grid;
-    private double[] nextGrid;
-    private readonly int width;
-    private readonly int height;
-    private readonly int size;
+    private double[] _grid;
+    private double[] _nextGrid;
+    private readonly int _width;
+    private readonly int _height;
+    private readonly int _size;
     
-    private double[] kernelWeights;
-    private int[] kernelOffsets;
-    private int kernelSize;
-    private double kernelSum;
+    private double[] _kernelWeights;
+    private int[] _kernelOffsets;
+    private int _kernelSize;
+    private double _kernelSum;
     
     public double R { get; set; } = 13.0;
     public double DeltaT { get; set; } = 0.1;
@@ -22,28 +19,28 @@ public class LeniaCore
     public double Sigma { get; set; } = 0.017;
     public double KernelAlpha { get; set; } = 4.0;
     
-    public int Width => width;
-    public int Height => height;
+    public int Width => _width;
+    public int Height => _height;
     
     public LeniaCore(int width, int height)
     {
-        this.width = width;
-        this.height = height;
-        this.size = width * height;
-        grid = new double[size];
-        nextGrid = new double[size];
+        this._width = width;
+        this._height = height;
+        this._size = width * height;
+        _grid = new double[_size];
+        _nextGrid = new double[_size];
         
         PrecomputeKernel();
         InitializeRandom();
     }
     
-    public double[] GetGrid() => grid;
+    public double[] GetGrid() => _grid;
     
     private void PrecomputeKernel()
     {
         var kernelRadius = (int)Math.Ceiling(R);
         var tempKernel = new List<(int offset, double weight)>();
-        kernelSum = 0;
+        _kernelSum = 0;
         
         for (int dx = -kernelRadius; dx <= kernelRadius; dx++)
         {
@@ -55,57 +52,57 @@ public class LeniaCore
                 var weight = KernelFunction(distance / R);
                 if (weight > 1e-10)
                 {
-                    var offset = dy * width + dx;
+                    var offset = dy * _width + dx;
                     tempKernel.Add((offset, weight));
-                    kernelSum += weight;
+                    _kernelSum += weight;
                 }
             }
         }
         
-        kernelSize = tempKernel.Count;
-        kernelOffsets = new int[kernelSize];
-        kernelWeights = new double[kernelSize];
+        _kernelSize = tempKernel.Count;
+        _kernelOffsets = new int[_kernelSize];
+        _kernelWeights = new double[_kernelSize];
         
-        for (int i = 0; i < kernelSize; i++)
+        for (int i = 0; i < _kernelSize; i++)
         {
-            kernelOffsets[i] = tempKernel[i].offset;
-            kernelWeights[i] = tempKernel[i].weight / kernelSum;
+            _kernelOffsets[i] = tempKernel[i].offset;
+            _kernelWeights[i] = tempKernel[i].weight / _kernelSum;
         }
     }
     
     private void InitializeRandom()
     {
         var random = new Random();
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < _size; i++)
         {
-            grid[i] = random.NextDouble();
+            _grid[i] = random.NextDouble();
         }
     }
     
     public void InitializeCircle(int centerX, int centerY, int radius)
     {
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < _height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < _width; x++)
             {
                 var dx = x - centerX;
                 var dy = y - centerY;
                 var distance = Math.Sqrt(dx * dx + dy * dy);
-                grid[y * width + x] = distance <= radius ? 1.0 : 0.0;
+                _grid[y * _width + x] = distance <= radius ? 1.0 : 0.0;
             }
         }
     }
     
     public void InitializeRing(int centerX, int centerY, int innerRadius, int outerRadius)
     {
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < _height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < _width; x++)
             {
                 var dx = x - centerX;
                 var dy = y - centerY;
                 var distance = Math.Sqrt(dx * dx + dy * dy);
-                grid[y * width + x] = (distance >= innerRadius && distance <= outerRadius) ? 1.0 : 0.0;
+                _grid[y * _width + x] = (distance >= innerRadius && distance <= outerRadius) ? 1.0 : 0.0;
             }
         }
     }
@@ -120,7 +117,7 @@ public class LeniaCore
         
         PrecomputeKernel();
         Clear();
-        InitializeCircle(width / 2, height / 2, 16);
+        InitializeCircle(_width / 2, _height / 2, 16);
     }
     
     public void InitializeGeminium()
@@ -133,48 +130,48 @@ public class LeniaCore
         
         PrecomputeKernel();
         Clear();
-        InitializeRing(width / 2, height / 2, 8, 12);
+        InitializeRing(_width / 2, _height / 2, 8, 12);
     }
     
     public void Clear()
     {
-        Array.Clear(grid, 0, grid.Length);
+        Array.Clear(_grid, 0, _grid.Length);
     }
     
     public void Update()
     {
-        Parallel.For(0, height, y =>
+        Parallel.For(0, _height, y =>
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < _width; x++)
             {
-                var index = y * width + x;
+                var index = y * _width + x;
                 var potential = CalculatePotentialOptimized(x, y);
                 var growth = GrowthFunction(potential);
-                nextGrid[index] = Math.Max(0, Math.Min(1, grid[index] + DeltaT * growth));
+                _nextGrid[index] = Math.Max(0, Math.Min(1, _grid[index] + DeltaT * growth));
             }
         });
         
-        (grid, nextGrid) = (nextGrid, grid);
+        (_grid, _nextGrid) = (_nextGrid, _grid);
     }
     
     private double CalculatePotentialOptimized(int centerX, int centerY)
     {
         double sum = 0;
-        var centerIndex = centerY * width + centerX;
+        var centerIndex = centerY * _width + centerX;
         
-        for (int i = 0; i < kernelSize; i++)
+        for (int i = 0; i < _kernelSize; i++)
         {
-            var offset = kernelOffsets[i];
-            var targetX = centerX + (offset % width);
-            var targetY = centerY + (offset / width);
+            var offset = _kernelOffsets[i];
+            var targetX = centerX + (offset % _width);
+            var targetY = centerY + (offset / _width);
             
-            if (targetX < 0) targetX += width;
-            if (targetX >= width) targetX -= width;
-            if (targetY < 0) targetY += height;
-            if (targetY >= height) targetY -= height;
+            if (targetX < 0) targetX += _width;
+            if (targetX >= _width) targetX -= _width;
+            if (targetY < 0) targetY += _height;
+            if (targetY >= _height) targetY -= _height;
             
-            var targetIndex = targetY * width + targetX;
-            sum += grid[targetIndex] * kernelWeights[i];
+            var targetIndex = targetY * _width + targetX;
+            sum += _grid[targetIndex] * _kernelWeights[i];
         }
         
         return sum;

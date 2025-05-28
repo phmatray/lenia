@@ -1,55 +1,41 @@
-@using Microsoft.JSInterop
 @using Lenia.Client.Models
 @implements IAsyncDisposable
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 
-<canvas @ref="canvasElement" width="@Width" height="@Height" class="@CanvasClass" style="background-color: #000;"></canvas>
+<canvas @ref="_canvasElement" width="@Width" height="@Height" class="@CanvasClass" style="background-color: #000;"></canvas>
 
 @code {
     [Parameter] public int Width { get; set; } = 600;
     [Parameter] public int Height { get; set; } = 600;
     [Parameter] public LeniaScalable? Lenia { get; set; }
-    [Parameter] public ColorScheme? ColorScheme { get; set; }
     [Parameter] public string CanvasClass { get; set; } = "";
     
-    private ElementReference canvasElement;
-    private IJSObjectReference? canvasModule;
-    private DotNetObjectReference<LeniaCanvas>? objRef;
-    private ColorScheme? _currentColorScheme;
+    private ElementReference _canvasElement;
+    private IJSObjectReference? _canvasModule;
+    private DotNetObjectReference<LeniaCanvas>? _objRef;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            objRef = DotNetObjectReference.Create(this);
-            canvasModule = await JS.InvokeAsync<IJSObjectReference>("import", "./leniaCanvas.js");
-            await canvasModule.InvokeVoidAsync("initializeCanvas", canvasElement, objRef);
-            
-            // Apply initial color scheme if set
-            if (ColorScheme != null)
-            {
-                _currentColorScheme = ColorScheme;
-                await SetColorScheme(ColorScheme);
-            }
-        }
-    }
-    
-    protected override async Task OnParametersSetAsync()
-    {
-        // Handle color scheme changes via parameter
-        if (ColorScheme != _currentColorScheme && canvasModule != null)
-        {
-            _currentColorScheme = ColorScheme;
-            await SetColorScheme(ColorScheme);
+            _objRef = DotNetObjectReference.Create(this);
+            _canvasModule = await Js.InvokeAsync<IJSObjectReference>("import", "./leniaCanvas.js");
+            await _canvasModule.InvokeVoidAsync("initializeCanvas", _canvasElement, _objRef);
         }
     }
     
     public async Task SetColorScheme(ColorScheme? scheme)
     {
-        if (canvasModule != null && scheme != null)
+        if (_canvasModule != null && scheme != null)
         {
             var colors = scheme.Colors.Select(c => new { r = c.R, g = c.G, b = c.B }).ToArray();
-            await canvasModule.InvokeVoidAsync("setColorScheme", colors);
+            Console.WriteLine($"=== C# SETTING COLOR SCHEME ===");
+            Console.WriteLine($"Scheme: {scheme.Name} with {colors.Length} colors");
+            Console.WriteLine($"First color: R={colors[0].r}, G={colors[0].g}, B={colors[0].b}");
+            Console.WriteLine($"Last color: R={colors[^1].r}, G={colors[^1].g}, B={colors[^1].b}");
+            Console.WriteLine($"===============================");
+            
+            await _canvasModule.InvokeVoidAsync("setColorScheme", colors);
             
             // Re-render the frame with the new color scheme
             if (Lenia != null)
@@ -57,32 +43,36 @@
                 await RenderFrame();
             }
         }
+        else
+        {
+            Console.WriteLine($"SetColorScheme failed: canvasModule={_canvasModule != null}, scheme={scheme?.Name ?? "null"}");
+        }
     }
     
     public async Task RenderFrame()
     {
-        if (canvasModule != null && Lenia != null)
+        if (_canvasModule != null && Lenia != null)
         {
             var grid = Lenia.GetGrid();
-            await canvasModule.InvokeVoidAsync("renderGrid", grid, Lenia.Width, Lenia.Height);
+            await _canvasModule.InvokeVoidAsync("renderGrid", grid, Lenia.Width, Lenia.Height);
         }
     }
     
     public async Task<string?> DownloadImage(string filename)
     {
-        if (canvasModule != null)
+        if (_canvasModule != null)
         {
-            await canvasModule.InvokeVoidAsync("downloadCanvas", filename);
+            await _canvasModule.InvokeVoidAsync("downloadCanvas", filename);
         }
         return null;
     }
     
     public async ValueTask DisposeAsync()
     {
-        if (canvasModule != null)
+        if (_canvasModule != null)
         {
-            await canvasModule.DisposeAsync();
+            await _canvasModule.DisposeAsync();
         }
-        objRef?.Dispose();
+        _objRef?.Dispose();
     }
 }

@@ -1,24 +1,24 @@
 @page "/"
-@using Lenia.Client.Components
 @using Lenia.Client.Models
 @implements IDisposable
 
 <PageTitle>Lenia - Artificial Life</PageTitle>
 
 <MudLayout>
-    <MudAppBar Fixed="true" Elevation="4" Class="py-2">
+    <MudAppBar Fixed="true" Elevation="6" Class="py-2" Style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); backdrop-filter: blur(10px);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" 
                        Color="Color.Inherit" 
                        Edge="Edge.Start" 
-                       OnClick="@(() => _drawerOpen = !_drawerOpen)" />
+                       OnClick="@(() => _drawerOpen = !_drawerOpen)"
+                       Class="hover-lift" />
         
-        <MudGrid Spacing="2">
+        <MudGrid Spacing="2" Class="align-center">
             <MudItem>
-                <MudIcon Icon="@Icons.Material.Filled.Biotech" Size="Size.Large" />
+                <MudIcon Icon="@Icons.Material.Filled.Biotech" Size="Size.Large" Color="Color.Primary" />
             </MudItem>
             <MudItem>
-                <MudText Typo="Typo.h5" Class="font-weight-bold">Lenia</MudText>
-                <MudText Typo="Typo.caption" Class="mt-n1">Artificial Life Simulation</MudText>
+                <MudText Typo="Typo.h5" Class="font-weight-bold gradient-text">Lenia</MudText>
+                <MudText Typo="Typo.caption" Class="mt-n1 subtitle-text">Artificial Life Simulation</MudText>
             </MudItem>
         </MudGrid>
         
@@ -58,7 +58,8 @@
                Fixed="true" 
                Elevation="2" 
                Variant="@DrawerVariant.Responsive"
-               Width="320px">
+               Width="380px"
+               ClipMode="DrawerClipMode.Always">
         <MudDrawerHeader Class="d-flex align-center pa-4">
             <MudIcon Icon="@Icons.Material.Filled.Tune" Class="mr-2" />
             <MudText Typo="Typo.h6">Control Panel</MudText>
@@ -66,7 +67,7 @@
         
         <MudDivider />
         
-        <MudContainer Class="pa-0" Style="height: calc(100vh - 160px); overflow-y: auto;">
+        <MudContainer Class="pa-0" Style="height: calc(100vh - 120px); overflow-y: auto; overflow-x: hidden;">
             <MudExpansionPanels MultiExpansion="true" Elevation="0">
                 
                 <!-- Quick Actions -->
@@ -111,24 +112,30 @@
                 
                 <!-- Color Schemes -->
                 <MudExpansionPanel Text="Color Schemes" Icon="@Icons.Material.Filled.Palette">
-                    <MudRadioGroup Value="_selectedColorScheme" T="ColorScheme" ValueChanged="OnColorSchemeChangedWrapper">
-                        @foreach (var scheme in ColorSchemes.All)
-                        {
-                            <MudRadio Value="@scheme" Color="Color.Primary" Size="Size.Small">
-                                <MudStack Row Spacing="2">
-                                    <MudText>@scheme.Name</MudText>
-                                    <div class="color-preview">
-                                        @for (int i = 0; i < Math.Min(scheme.Colors.Length, 8); i++)
-                                        {
-                                            var color = scheme.Colors[i];
-                                            <div class="color-swatch" 
-                                                 style="background-color: rgb(@color.R, @color.G, @color.B)"></div>
-                                        }
-                                    </div>
-                                </MudStack>
-                            </MudRadio>
-                        }
-                    </MudRadioGroup>
+                    <div class="pa-2">
+                        <MudGrid Spacing="2">
+                            @foreach (var scheme in ColorSchemes.All)
+                            {
+                                <MudItem xs="6">
+                                    <MudPaper Class="@($"color-scheme-card {(_selectedColorScheme == scheme ? "selected" : "")}")" 
+                                              Elevation="1"
+                                              @onclick="() => OnColorSchemeChangedWrapper(scheme)">
+                                        <div class="pa-2">
+                                            <MudText Typo="Typo.caption" Class="mb-1 font-weight-medium">@scheme.Name</MudText>
+                                            <div class="color-preview-grid">
+                                                @for (int i = 0; i < Math.Min(scheme.Colors.Length, 6); i++)
+                                                {
+                                                    var color = scheme.Colors[i];
+                                                    <div class="color-swatch-grid" 
+                                                         style="background-color: rgb(@color.R, @color.G, @color.B)"></div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </MudPaper>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </div>
                 </MudExpansionPanel>
                 
                 <!-- Grid Settings -->
@@ -264,27 +271,51 @@
     </MudDrawer>
     
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 d-flex align-center justify-center" 
-                      Style="height: 100vh; background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);">
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4 d-flex align-center justify-center" 
+                      Style="min-height: calc(100vh - 64px); background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);">
             <div class="canvas-container">
                 <LeniaCanvas @ref="_leniaCanvas" 
-                             Width="800" 
-                             Height="800" 
+                             Width="@_canvasSize" 
+                             Height="@_canvasSize" 
                              Lenia="_lenia"
-                             ColorScheme="_selectedColorScheme"
                              CanvasClass="lenia-canvas" />
                 
                 @if (!_isRunning)
                 {
                     <div class="canvas-overlay">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                       Color="Color.Primary"
-                                       Size="Size.Large"
-                                       Variant="Variant.Filled"
-                                       OnClick="TogglePlayPause"
-                                       Class="play-button-overlay" />
+                        <div class="play-button-container">
+                            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                           Color="Color.Primary"
+                                           Size="Size.Large"
+                                           Variant="Variant.Filled"
+                                           OnClick="TogglePlayPause"
+                                           Class="play-button-overlay" />
+                            <MudText Typo="Typo.body2" Class="mt-2 text-center" Style="color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.7);">
+                                Click to start simulation
+                            </MudText>
+                        </div>
                     </div>
                 }
+            </div>
+            
+            <!-- Info Panel for smaller screens -->
+            <div class="d-flex d-md-none mt-4">
+                <MudPaper Class="pa-3" Elevation="2" Style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                    <MudGrid Spacing="2" Justify="Justify.SpaceEvenly">
+                        <MudItem xs="4" Class="text-center">
+                            <MudText Typo="Typo.caption">FPS</MudText>
+                            <MudText Typo="Typo.body1" Color="@GetFpsColor()">@_actualFps.ToString("F0")</MudText>
+                        </MudItem>
+                        <MudItem xs="4" Class="text-center">
+                            <MudText Typo="Typo.caption">Generation</MudText>
+                            <MudText Typo="Typo.body1">@_generation</MudText>
+                        </MudItem>
+                        <MudItem xs="4" Class="text-center">
+                            <MudText Typo="Typo.caption">Grid</MudText>
+                            <MudText Typo="Typo.body1">@(_gridSize)×@(_gridSize)</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
             </div>
         </MudContainer>
     </MudMainContent>
@@ -333,22 +364,23 @@
         public Action<LeniaScalable> Apply { get; init; } = _ => { };
     }
     
-    private LeniaScalable _lenia = new(32, 32, 60);
+    private LeniaScalable _lenia = new(32, 32);
     private LeniaCanvas? _leniaCanvas;
     private bool _drawerOpen = true;
-    private bool _isRunning = false;
-    private bool _showAboutDialog = false;
+    private bool _isRunning;
+    private bool _showAboutDialog;
     private int _targetFps = 60;
     private int _gridSize = 32;
+    private int _canvasSize = 600;
     private Timer? _updateTimer;
     private ColorScheme _selectedColorScheme = ColorSchemes.Plasma;
-    private int _generation = 0;
+    private int _generation;
     
-    private double _actualFps = 0;
-    private double _updateTimeMs = 0;
-    private double _renderTimeMs = 0;
+    private double _actualFps;
+    private double _updateTimeMs;
+    private double _renderTimeMs;
     private DateTime _lastFrameTime = DateTime.Now;
-    private int _frameCount = 0;
+    private int _frameCount;
     
     private readonly List<PatternPreset> _presets = new()
     {
@@ -364,16 +396,50 @@
     {
         if (firstRender)
         {
+            // Calculate responsive canvas size
+            UpdateCanvasSize();
+            
             // Initialize with a default pattern
             _lenia.InitializeOrbium();
+            
             await StartAnimation();
-            await RenderFrame();
+            
+            // Wait for canvas to be fully initialized
+            await Task.Delay(300);
+            
+            // Force color scheme application
+            if (_leniaCanvas != null)
+            {
+                Console.WriteLine($"Forcing initial color scheme: {_selectedColorScheme.Name}");
+                await _leniaCanvas.SetColorScheme(_selectedColorScheme);
+                await RenderFrame(); // Force immediate render with color scheme
+            }
+        }
+    }
+    
+    private void UpdateCanvasSize()
+    {
+        // Responsive canvas sizing based on viewport
+        if (_drawerOpen)
+        {
+            _canvasSize = Math.Min(600, Math.Max(400, (int)(0.7 * 800))); // Account for drawer
+        }
+        else
+        {
+            _canvasSize = Math.Min(800, Math.Max(400, (int)(0.9 * 1000))); // Full width
         }
     }
     
     private async Task OnColorSchemeChangedWrapper(ColorScheme newScheme)
     {
+        Console.WriteLine($"Color scheme changed to: {newScheme.Name}");
         _selectedColorScheme = newScheme;
+        
+        if (_leniaCanvas != null)
+        {
+            await _leniaCanvas.SetColorScheme(newScheme);
+        }
+        
         await RenderFrame();
         StateHasChanged();
     }
@@ -388,8 +454,14 @@
     {
         _generation = 0;
         _lenia = new LeniaScalable(_gridSize, _gridSize, _targetFps);
+        _lenia.InitializeOrbium(); // Add pattern immediately
         InvokeAsync(async () => 
         {
+            // Force color scheme reapplication
+            if (_leniaCanvas != null)
+            {
+                await _leniaCanvas.SetColorScheme(_selectedColorScheme);
+            }
             await RenderFrame();
             StateHasChanged();
         });
@@ -412,6 +484,11 @@
         preset.Apply(_lenia);
         InvokeAsync(async () => 
         {
+            // Force color scheme reapplication after loading preset
+            if (_leniaCanvas != null)
+            {
+                await _leniaCanvas.SetColorScheme(_selectedColorScheme);
+            }
             await RenderFrame();
             StateHasChanged();
         });
@@ -432,7 +509,7 @@
     private void OnFpsChanged(int newFps)
     {
         _targetFps = newFps;
-        _lenia.SetTargetFPS(_targetFps);
+        _lenia.SetTargetFps(_targetFps);
         RestartTimer();
     }
     
@@ -560,11 +637,24 @@
     .canvas-container {
         position: relative;
         display: inline-block;
+        margin: 0 auto;
+        transition: all 0.3s ease;
     }
     
     .lenia-canvas {
-        border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(124, 92, 252, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .lenia-canvas:hover {
+        box-shadow: 
+            0 24px 48px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(124, 92, 252, 0.3);
+        border-color: rgba(124, 92, 252, 0.4);
     }
     
     .canvas-overlay {
@@ -576,42 +666,187 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgba(0, 0, 0, 0.3);
-        border-radius: 8px;
+        background: 
+            radial-gradient(circle at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%),
+            linear-gradient(135deg, rgba(124, 92, 252, 0.1) 0%, rgba(124, 92, 252, 0.05) 100%);
+        border-radius: 12px;
+        backdrop-filter: blur(2px);
+        transition: all 0.3s ease;
+    }
+    
+    .canvas-overlay:hover {
+        background: 
+            radial-gradient(circle at center, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%),
+            linear-gradient(135deg, rgba(124, 92, 252, 0.15) 0%, rgba(124, 92, 252, 0.1) 100%);
+    }
+    
+    .play-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: pulse 2s infinite ease-in-out;
     }
     
     .play-button-overlay {
         width: 80px !important;
         height: 80px !important;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(124, 92, 252, 0.3);
+    }
+    
+    .play-button-overlay:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 32px rgba(124, 92, 252, 0.5);
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
     }
     
     .pattern-card {
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-align: center;
-        min-height: 50px;
+        min-height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
     }
     
     .pattern-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 
+            0 8px 25px rgba(124, 92, 252, 0.2),
+            0 0 0 1px rgba(124, 92, 252, 0.3);
+        border-color: rgba(124, 92, 252, 0.4);
+        background: rgba(124, 92, 252, 0.05);
     }
     
     .color-preview {
         display: flex;
-        gap: 2px;
-        margin-left: 8px;
+        gap: 3px;
+        margin-left: 12px;
+        align-items: center;
+        flex-wrap: wrap;
     }
     
     .color-swatch {
-        width: 12px;
-        height: 12px;
-        border-radius: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+    }
+    
+    .color-swatch:hover {
+        transform: scale(1.2);
     }
     
     .cursor-pointer {
         cursor: pointer;
+    }
+    
+    /* App bar enhancements */
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+    
+    .gradient-text {
+        background: linear-gradient(45deg, #7c5cfc 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .subtitle-text {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Color scheme grid styling */
+    .color-scheme-card {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .color-scheme-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(124, 92, 252, 0.3);
+        background: rgba(124, 92, 252, 0.05);
+        box-shadow: 0 8px 25px rgba(124, 92, 252, 0.15);
+    }
+    
+    .color-scheme-card.selected {
+        border-color: rgba(124, 92, 252, 0.6);
+        background: rgba(124, 92, 252, 0.1);
+        box-shadow: 0 4px 15px rgba(124, 92, 252, 0.3);
+    }
+    
+    .color-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 2px;
+        height: 20px;
+    }
+    
+    .color-swatch-grid {
+        border-radius: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+    }
+    
+    .color-swatch-grid:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Responsive design improvements */
+    @@media (max-width: 960px) {
+        .canvas-container {
+            max-width: 90vw;
+        }
+        
+        .lenia-canvas {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1;
+        }
+    }
+    
+    @@media (max-width: 600px) {
+        .canvas-container {
+            max-width: 95vw;
+        }
+        
+        .play-button-overlay {
+            width: 60px !important;
+            height: 60px !important;
+        }
+    }
+    
+    /* Custom scrollbar for drawer */
+    .mud-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .mud-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+    
+    .mud-container::-webkit-scrollbar-thumb {
+        background: rgba(124, 92, 252, 0.3);
+        border-radius: 3px;
+    }
+    
+    .mud-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(124, 92, 252, 0.5);
     }
 </style>
