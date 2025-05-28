@@ -4,155 +4,152 @@
 
 <PageTitle>Lenia</PageTitle>
 
-<h1>Lenia - Artificial Life Simulation</h1>
+<MudAppBar Elevation="1">
+    <MudIcon Icon="@Icons.Material.Filled.Biotech" Style="margin-right: 10px;" />
+    <MudText Typo="Typo.h6">Lenia - Artificial Life Simulation</MudText>
+    <MudSpacer />
+    <MudIconButton Icon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                   Color="Color.Inherit" 
+                   OnClick="TogglePlayPause" />
+</MudAppBar>
 
-<div class="container">
-    <div class="controls">
-        <button class="btn btn-primary" @onclick="TogglePlayPause">
-            @(isRunning ? "Pause" : "Play")
-        </button>
-        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudPaper Elevation="2" Class="pa-4">
+                <LeniaCanvas @ref="leniaCanvas" Width="600" Height="600" Lenia="lenia" />
+            </MudPaper>
+        </MudItem>
         
-        <div class="pattern-buttons">
-            <h4>Patterns:</h4>
-            <button class="btn btn-secondary" @onclick="InitializeCircle">Circle</button>
-            <button class="btn btn-secondary" @onclick="InitializeOrbium">Orbium</button>
-            <button class="btn btn-secondary" @onclick="InitializeGeminium">Geminium</button>
-        </div>
-        
-        <div class="parameter-group">
-            <label>
-                Radius (R): <span>@lenia.R.ToString("F1")</span>
-                <input type="range" min="5" max="25" step="0.5" @bind="lenia.R" />
-            </label>
-            
-            <label>
-                Time Step (Δt): <span>@lenia.DeltaT.ToString("F2")</span>
-                <input type="range" min="0.01" max="0.5" step="0.01" @bind="lenia.DeltaT" />
-            </label>
-            
-            <label>
-                Growth μ: <span>@lenia.Mu.ToString("F3")</span>
-                <input type="range" min="0" max="0.5" step="0.001" @bind="lenia.Mu" />
-            </label>
-            
-            <label>
-                Growth σ: <span>@lenia.Sigma.ToString("F3")</span>
-                <input type="range" min="0.001" max="0.1" step="0.001" @bind="lenia.Sigma" />
-            </label>
-            
-            <label>
-                Kernel α: <span>@lenia.KernelAlpha.ToString("F1")</span>
-                <input type="range" min="1" max="10" step="0.1" @bind="lenia.KernelAlpha" />
-            </label>
-        </div>
-        
-        <div>
-            <label>
-                Speed (FPS): <span>@targetFps</span>
-                <input type="range" min="1" max="60" @bind="targetFps" @oninput="OnFpsChanged" />
-            </label>
-        </div>
-        
-        <div class="performance-info">
-            <h4>Performance:</h4>
-            <p>Actual FPS: <span>@actualFps.ToString("F1")</span></p>
-            <p>Update Time: <span>@updateTimeMs.ToString("F1")</span> ms</p>
-            <p>Render Time: <span>@renderTimeMs.ToString("F1")</span> ms</p>
-        </div>
-    </div>
-    
-    <LeniaCanvas @ref="leniaCanvas" Width="600" Height="600" Lenia="lenia" />
-</div>
-
-<style>
-    .container {
-        display: flex;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    
-    .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        min-width: 300px;
-    }
-    
-    .parameter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    
-    .parameter-group label {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .parameter-group input[type="range"] {
-        width: 100%;
-    }
-    
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-    }
-    
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-    
-    .btn:hover {
-        opacity: 0.9;
-    }
-    
-    .pattern-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        margin-top: 10px;
-    }
-    
-    .pattern-buttons h4 {
-        margin: 0 0 5px 0;
-    }
-    
-    .performance-info {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f8f9fa;
-    }
-    
-    .performance-info h4 {
-        margin: 0 0 10px 0;
-    }
-    
-    .performance-info p {
-        margin: 5px 0;
-        font-family: monospace;
-    }
-</style>
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Spacing="3">
+                    
+                    <!-- Control Buttons -->
+                    <MudStack Row Spacing="2">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="@(isRunning ? Color.Error : Color.Success)"
+                                   StartIcon="@(isRunning ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                                   OnClick="TogglePlayPause">
+                            @(isRunning ? "Pause" : "Play")
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" 
+                                   StartIcon="@Icons.Material.Filled.Refresh"
+                                   OnClick="Reset">
+                            Reset
+                        </MudButton>
+                    </MudStack>
+                    
+                    <!-- Grid Size Controls -->
+                    <MudExpansionPanels Elevation="0">
+                        <MudExpansionPanel Text="Grid Settings">
+                            <MudStack Spacing="2">
+                                <MudSlider T="int" 
+                                           Value="gridSize" 
+                                           Min="24" Max="128" Step="8"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="{0}x{0}"
+                                           ValueChanged="OnGridSizeChanged">
+                                    Grid Size
+                                </MudSlider>
+                                
+                                <MudSwitch @bind-Value="lenia.UseAdaptiveQuality" 
+                                           Label="Adaptive Quality" 
+                                           Color="Color.Primary" />
+                                
+                                <MudText Typo="Typo.caption">
+                                    Processing Quality: @lenia.ProcessingQuality%
+                                </MudText>
+                            </MudStack>
+                        </MudExpansionPanel>
+                        
+                        <MudExpansionPanel Text="Pattern Presets">
+                            <MudStack Row Spacing="2">
+                                <MudButton Variant="Variant.Text" OnClick="InitializeCircle">Circle</MudButton>
+                                <MudButton Variant="Variant.Text" OnClick="InitializeOrbium">Orbium</MudButton>
+                                <MudButton Variant="Variant.Text" OnClick="InitializeGeminium">Geminium</MudButton>
+                            </MudStack>
+                        </MudExpansionPanel>
+                        
+                        <MudExpansionPanel Text="Physics Parameters">
+                            <MudStack Spacing="2">
+                                <MudSlider T="float" 
+                                           @bind-Value="lenia.R" 
+                                           Min="2.0f" Max="10.0f" Step="0.1f"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="R: {0:F1}">
+                                    Radius (R)
+                                </MudSlider>
+                                
+                                <MudSlider T="float" 
+                                           @bind-Value="lenia.DeltaT" 
+                                           Min="0.01f" Max="0.5f" Step="0.01f"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="Δt: {0:F2}">
+                                    Time Step (Δt)
+                                </MudSlider>
+                                
+                                <MudSlider T="float" 
+                                           @bind-Value="lenia.Mu" 
+                                           Min="0.0f" Max="0.5f" Step="0.001f"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="μ: {0:F3}">
+                                    Growth μ
+                                </MudSlider>
+                                
+                                <MudSlider T="float" 
+                                           @bind-Value="lenia.Sigma" 
+                                           Min="0.001f" Max="0.1f" Step="0.001f"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="σ: {0:F3}">
+                                    Growth σ
+                                </MudSlider>
+                            </MudStack>
+                        </MudExpansionPanel>
+                        
+                        <MudExpansionPanel Text="Performance">
+                            <MudStack Spacing="2">
+                                <MudSlider T="int" 
+                                           Value="targetFps" 
+                                           Min="10" Max="120" Step="5"
+                                           ValueLabel="true"
+                                           ValueLabelFormat="Target: {0} FPS"
+                                           ValueChanged="OnFpsChanged">
+                                    Target FPS
+                                </MudSlider>
+                                
+                                <MudPaper Class="pa-3" Style="background-color: #f5f5f5;">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Small" />
+                                            Actual FPS: <strong>@actualFps.ToString("F1")</strong>
+                                        </MudText>
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" />
+                                            Update Time: <strong>@updateTimeMs.ToString("F1")</strong> ms
+                                        </MudText>
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" />
+                                            Render Time: <strong>@renderTimeMs.ToString("F1")</strong> ms
+                                        </MudText>
+                                    </MudStack>
+                                </MudPaper>
+                            </MudStack>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                    
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
-    private LeniaMinimal lenia = new(24, 24);
+    private LeniaScalable lenia = new(32, 32, 60);
     private LeniaCanvas? leniaCanvas;
     private bool isRunning = false;
     private int targetFps = 60;
+    private int gridSize = 32;
     private Timer? updateTimer;
     
     private double actualFps = 0;
@@ -176,13 +173,20 @@
     
     private void Reset()
     {
-        lenia = new LeniaMinimal(24, 24);
+        lenia = new LeniaScalable(gridSize, gridSize, targetFps);
         InvokeAsync(async () => await RenderFrame());
     }
     
     private void InitializeCircle()
     {
-        lenia.InitializeCircle(12, 12, 4);
+        lenia.InitializeCircle(gridSize / 2, gridSize / 2, gridSize / 6);
+        InvokeAsync(async () => await RenderFrame());
+    }
+    
+    private void OnGridSizeChanged(int newSize)
+    {
+        gridSize = newSize;
+        lenia.ResizeGrid(gridSize, gridSize);
         InvokeAsync(async () => await RenderFrame());
     }
     
@@ -198,13 +202,11 @@
         InvokeAsync(async () => await RenderFrame());
     }
     
-    private void OnFpsChanged(ChangeEventArgs e)
+    private void OnFpsChanged(int newFps)
     {
-        if (int.TryParse(e.Value?.ToString(), out var newFps))
-        {
-            targetFps = newFps;
-            RestartTimer();
-        }
+        targetFps = newFps;
+        lenia.SetTargetFPS(targetFps);
+        RestartTimer();
     }
     
     private void RestartTimer()

@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Lenia.Client\Lenia.Client.csproj"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5"/>
+    <PackageReference Include="MudBlazor" Version="8.6.0"/>
   </ItemGroup>
 
 </Project>
