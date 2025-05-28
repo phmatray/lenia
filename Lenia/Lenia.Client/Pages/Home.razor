@@ -149,10 +149,10 @@
 </style>
 
 @code {
-    private LeniaCore lenia = new(100, 100);
+    private LeniaCoreOptimized lenia = new(48, 48);
     private LeniaCanvas? leniaCanvas;
     private bool isRunning = false;
-    private int targetFps = 30;
+    private int targetFps = 60;
     private Timer? updateTimer;
     
     private double actualFps = 0;
@@ -176,13 +176,13 @@
     
     private void Reset()
     {
-        lenia = new LeniaCore(100, 100);
+        lenia = new LeniaCoreOptimized(48, 48);
         InvokeAsync(async () => await RenderFrame());
     }
     
     private void InitializeCircle()
     {
-        lenia.InitializeCircle(50, 50, 20);
+        lenia.InitializeCircle(24, 24, 8);
         InvokeAsync(async () => await RenderFrame());
     }
     
