@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Standalone Deployment</title>
+</head>
+<body>
+    <h1>Test Links for Lenia Deployment</h1>
+    <ul>
+        <li><a href="release/wwwroot/index.html">Direct file link (won't work properly)</a></li>
+        <li><a href="http://localhost:8080/Lenia/">Served via Python HTTP server (recommended)</a></li>
+    </ul>
+    
+    <h2>To test the standalone deployment:</h2>
+    <pre>
+cd release/wwwroot
+python3 -m http.server 8080
+    </pre>
+    <p>Then open: <a href="http://localhost:8080/Lenia/">http://localhost:8080/Lenia/</a></p>
+    
+    <h2>Current deployment structure:</h2>
+    <iframe src="release/wwwroot/" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
+</body>
+</html>
