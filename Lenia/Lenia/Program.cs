@@ -1,36 +1,9 @@
-using Lenia.Components;
-using MudBlazor.Services;
+using Lenia.Modules;
+using TheAppManager.Startup;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
-
-builder.Services.AddMudServices();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+AppManager.Start(args, modules =>
 {
-    app.UseWebAssemblyDebugging();
-}
-else
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Lenia.Client._Imports).Assembly);
-
-app.Run();
+    modules
+        .Add<BlazorModule>()
+        .Add<InfrastructureModule>();
+});
