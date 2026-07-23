@@ -159,6 +159,16 @@ For more details, see the [original paper](https://arxiv.org/abs/1812.05433).
 - **Hardware Scaling**: GPU-accelerated canvas scaling
 - **Minimal Allocations**: Reused buffers and optimized memory access
 
+## 🗺️ Roadmap
+
+- [ ] Add more pattern presets beyond Circle, Orbium, and Geminium
+- [ ] Support saving, loading, and sharing custom patterns
+- [ ] Investigate WebGL/GPU-accelerated rendering to push past the 128×128 grid ceiling
+- [ ] Add automated unit tests for the simulation engine (`LeniaScalable`)
+- [ ] Touch controls for painting cells directly on mobile devices
+
+See the [open issues](https://github.com/phmatray/lenia/issues) for what's currently planned.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how to get started:
