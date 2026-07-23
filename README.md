@@ -2,6 +2,28 @@
 
 # 🧬 Lenia - Artificial Life Simulation
 
+<!-- portfolio-toc:start -->
+
+## Table of Contents
+
+- [✨ Features](#-features)
+- [🎮 Demo](#-demo)
+- [🛠️ Technologies](#-technologies)
+- [🚀 Getting Started](#-getting-started)
+- [🎯 Usage](#-usage)
+- [🔬 About Lenia](#-about-lenia)
+- [🏗️ Architecture](#-architecture)
+- [⚡ Performance Optimizations](#-performance-optimizations)
+- [🗺️ Roadmap](#-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📝 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
+- [📚 References](#-references)
+- [🐛 Issues & Support](#-issues--support)
+
+<!-- portfolio-toc:end -->
+
+
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
 [![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-purple.svg)](https://blazor.net/)
 [![MudBlazor](https://img.shields.io/badge/MudBlazor-8.6.0-orange.svg)](https://mudblazor.com/)
