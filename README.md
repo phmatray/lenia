@@ -1,3 +1,5 @@
+![lenia banner](.github/banner.png)
+
 # 🧬 Lenia - Artificial Life Simulation
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
