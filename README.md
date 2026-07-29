@@ -243,3 +243,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ and lots of ☕ by [Philippe Matray](https://github.com/phmatray)
 
 </div>
+
+<!-- portfolio-nugetkeep:start -->
+---
+Built by [Atypical Consulting](https://www.atypical.consulting). We also make
+[NuGetKeep](https://nugetkeep.com/?utm_source=github-readme&utm_medium=readme&utm_campaign=launch-2026-07),
+a self-hosted NuGet server with supply-chain quarantine.
+<!-- portfolio-nugetkeep:end -->
