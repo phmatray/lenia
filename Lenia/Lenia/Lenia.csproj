@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="TheAppManager" Version="2.0.0" />
     <ProjectReference Include="..\Lenia.Client\Lenia.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
-    <PackageReference Include="MudBlazor" Version="9.7.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
+    <PackageReference Include="MudBlazor" Version="9.9.0" />
   </ItemGroup>
 
 </Project>
